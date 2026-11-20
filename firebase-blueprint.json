@@ -1,0 +1,201 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "Profil utilisateur",
+      "description": "Profil privé d'un utilisateur DataMind AI et référence à son organisation active.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "fullName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 254
+        },
+        "organizationId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "fullName", "email", "organizationId", "createdAt"]
+    },
+    "Organization": {
+      "title": "Organisation",
+      "description": "Espace locataire (tenant) isolé regroupant sources, rapports et quotas.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "plan": {
+          "type": "string",
+          "enum": ["starter", "pro", "enterprise"]
+        },
+        "aiProvider": {
+          "type": "string",
+          "enum": ["gemini", "ollama", "openai"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["name", "ownerId", "plan", "aiProvider", "createdAt", "updatedAt"]
+    },
+    "OrgMember": {
+      "title": "Membre d'organisation",
+      "description": "Appartenance et rôle RBAC d'un utilisateur au sein d'une organisation.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "role": {
+          "type": "string",
+          "enum": ["owner", "admin", "analyst", "viewer"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["userId", "displayName", "role", "createdAt"]
+    },
+    "SavedReport": {
+      "title": "Rapport analytique",
+      "description": "Rapport SQL en lecture seule enregistré par une organisation.",
+      "type": "object",
+      "properties": {
+        "organizationId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 160
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "sqlQuery": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 4000
+        },
+        "chartType": {
+          "type": "string",
+          "enum": ["bar", "line", "area", "table"]
+        },
+        "authorId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["organizationId", "title", "description", "sqlQuery", "chartType", "authorId", "createdAt", "updatedAt"]
+    },
+    "ConversationEntry": {
+      "title": "Historique de conversation IA",
+      "description": "Question analytique, SQL validé et synthèse associés à un utilisateur de l'organisation.",
+      "type": "object",
+      "properties": {
+        "organizationId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "authorId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 1200
+        },
+        "generatedSql": {
+          "type": "string",
+          "maxLength": 4000
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 4000
+        },
+        "status": {
+          "type": "string",
+          "enum": ["executed", "blocked", "error"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["organizationId", "authorId", "prompt", "generatedSql", "summary", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Profil privé de l'utilisateur (PII strictement limitée au propriétaire ou admin)."
+    },
+    "/organizations/{orgId}": {
+      "schema": { "$ref": "#/entities/Organization" },
+      "description": "Métadonnées de l'organisation multi-tenant."
+    },
+    "/organizations/{orgId}/members/{memberId}": {
+      "schema": { "$ref": "#/entities/OrgMember" },
+      "description": "Membres actifs et rôles RBAC par organisation."
+    },
+    "/organizations/{orgId}/reports/{reportId}": {
+      "schema": { "$ref": "#/entities/SavedReport" },
+      "description": "Rapports SQL enregistrés isolés par organisation."
+    },
+    "/organizations/{orgId}/conversations/{convId}": {
+      "schema": { "$ref": "#/entities/ConversationEntry" },
+      "description": "Historique des analyses IA isolé par organisation."
+    }
+  }
+}

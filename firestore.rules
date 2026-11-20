@@ -1,0 +1,249 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // === Primitives durcies ===
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isPlatformAdmin() {
+      return isVerified() && (
+        request.auth.token.email == 'ramadankarim2131@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isOrgMember(orgId) {
+      return isVerified() &&
+        exists(/databases/$(database)/documents/organizations/$(orgId)/members/$(request.auth.uid));
+    }
+
+    function getOrgRole(orgId) {
+      return get(/databases/$(database)/documents/organizations/$(orgId)/members/$(request.auth.uid)).data.role;
+    }
+
+    function isOrgAdmin(orgId) {
+      return isOrgMember(orgId) && getOrgRole(orgId) in ['owner', 'admin'];
+    }
+
+    function isOrgAnalyst(orgId) {
+      return isOrgMember(orgId) && getOrgRole(orgId) in ['owner', 'admin', 'analyst'];
+    }
+
+    // === Validation Blueprints ===
+    function isValidUserProfile(data, userId) {
+      return data.keys().hasAll(['uid', 'fullName', 'email', 'organizationId', 'createdAt']) &&
+        data.keys().hasOnly(['uid', 'fullName', 'email', 'organizationId', 'createdAt']) &&
+        isValidId(data.uid) &&
+        data.uid == userId &&
+        data.uid == request.auth.uid &&
+        data.fullName is string && data.fullName.size() >= 2 && data.fullName.size() <= 120 &&
+        data.email is string && data.email.size() >= 5 && data.email.size() <= 254 &&
+        isValidId(data.organizationId) &&
+        data.createdAt is timestamp;
+    }
+
+    function isValidOrganization(data) {
+      return data.keys().hasAll(['name', 'ownerId', 'plan', 'aiProvider', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['name', 'ownerId', 'plan', 'aiProvider', 'createdAt', 'updatedAt']) &&
+        data.name is string && data.name.size() >= 2 && data.name.size() <= 120 &&
+        isValidId(data.ownerId) &&
+        data.plan in ['starter', 'pro', 'enterprise'] &&
+        data.aiProvider in ['gemini', 'ollama', 'openai'] &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidOrgMember(data, memberId) {
+      return data.keys().hasAll(['userId', 'displayName', 'role', 'createdAt']) &&
+        data.keys().hasOnly(['userId', 'displayName', 'role', 'createdAt']) &&
+        isValidId(data.userId) &&
+        data.userId == memberId &&
+        data.displayName is string && data.displayName.size() >= 2 && data.displayName.size() <= 120 &&
+        data.role in ['owner', 'admin', 'analyst', 'viewer'] &&
+        data.createdAt is timestamp;
+    }
+
+    function isValidReport(data, orgId) {
+      return data.keys().hasAll(['organizationId', 'title', 'description', 'sqlQuery', 'chartType', 'authorId', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['organizationId', 'title', 'description', 'sqlQuery', 'chartType', 'authorId', 'createdAt', 'updatedAt']) &&
+        isValidId(data.organizationId) &&
+        data.organizationId == orgId &&
+        data.title is string && data.title.size() >= 3 && data.title.size() <= 160 &&
+        data.description is string && data.description.size() <= 500 &&
+        data.sqlQuery is string && data.sqlQuery.size() >= 10 && data.sqlQuery.size() <= 4000 &&
+        data.chartType in ['bar', 'line', 'area', 'table'] &&
+        isValidId(data.authorId) &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidConversation(data, orgId) {
+      return data.keys().hasAll(['organizationId', 'authorId', 'prompt', 'generatedSql', 'summary', 'status', 'createdAt']) &&
+        data.keys().hasOnly(['organizationId', 'authorId', 'prompt', 'generatedSql', 'summary', 'status', 'createdAt']) &&
+        isValidId(data.organizationId) &&
+        data.organizationId == orgId &&
+        isValidId(data.authorId) &&
+        data.authorId == request.auth.uid &&
+        data.prompt is string && data.prompt.size() >= 2 && data.prompt.size() <= 1200 &&
+        data.generatedSql is string && data.generatedSql.size() <= 4000 &&
+        data.summary is string && data.summary.size() <= 4000 &&
+        data.status in ['executed', 'blocked', 'error'] &&
+        data.createdAt is timestamp;
+    }
+
+    // === Collection /users/{userId} (PII strictement isolée) ===
+    match /users/{userId} {
+      allow get: if isVerified() && isValidId(userId) && (request.auth.uid == userId || isPlatformAdmin());
+      allow list: if isPlatformAdmin();
+      allow create: if isVerified() &&
+        isValidId(userId) &&
+        request.auth.uid == userId &&
+        isValidUserProfile(incoming(), userId) &&
+        incoming().createdAt == request.time;
+      allow update: if isVerified() &&
+        isValidId(userId) &&
+        isValidUserProfile(incoming(), userId) &&
+        incoming().uid == existing().uid &&
+        incoming().createdAt == existing().createdAt &&
+        (
+          isPlatformAdmin() ||
+          (
+            request.auth.uid == userId &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['fullName', 'organizationId'])
+          )
+        );
+      allow delete: if isPlatformAdmin() && isValidId(userId);
+    }
+
+    // === Collection /organizations/{orgId} ===
+    match /organizations/{orgId} {
+      allow get: if isVerified() && isValidId(orgId) && (isOrgMember(orgId) || isPlatformAdmin());
+      allow list: if isVerified() && (resource.data.ownerId == request.auth.uid || isPlatformAdmin());
+      allow create: if isVerified() &&
+        isValidId(orgId) &&
+        isValidOrganization(incoming()) &&
+        incoming().ownerId == request.auth.uid &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerified() &&
+        isValidId(orgId) &&
+        isValidOrganization(incoming()) &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          isPlatformAdmin() ||
+          (
+            isOrgAdmin(orgId) &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['name', 'plan', 'aiProvider', 'updatedAt'])
+          )
+        );
+      allow delete: if isPlatformAdmin() && isValidId(orgId);
+
+      // Sous-collection /organizations/{orgId}/members/{memberId}
+      match /members/{memberId} {
+        allow get: if isVerified() && isValidId(orgId) && isValidId(memberId) && (isOrgMember(orgId) || isPlatformAdmin());
+        allow list: if isVerified() && isValidId(orgId) && (resource.data.userId == request.auth.uid || isPlatformAdmin());
+        allow create: if isVerified() &&
+          isValidId(orgId) &&
+          isValidId(memberId) &&
+          isValidOrgMember(incoming(), memberId) &&
+          incoming().createdAt == request.time &&
+          exists(/databases/$(database)/documents/organizations/$(orgId)) &&
+          (
+            isPlatformAdmin() ||
+            isOrgAdmin(orgId) ||
+            (
+              memberId == request.auth.uid &&
+              incoming().role == 'owner' &&
+              get(/databases/$(database)/documents/organizations/$(orgId)).data.ownerId == request.auth.uid
+            )
+          );
+        allow update: if isVerified() &&
+          isValidId(orgId) &&
+          isValidId(memberId) &&
+          isValidOrgMember(incoming(), memberId) &&
+          incoming().userId == existing().userId &&
+          incoming().createdAt == existing().createdAt &&
+          (
+            isPlatformAdmin() ||
+            (
+              isOrgAdmin(orgId) &&
+              incoming().diff(existing()).affectedKeys().hasOnly(['role', 'displayName'])
+            )
+          );
+        allow delete: if isVerified() && isValidId(orgId) && isValidId(memberId) && (isOrgAdmin(orgId) || isPlatformAdmin());
+      }
+
+      // Sous-collection /organizations/{orgId}/reports/{reportId}
+      match /reports/{reportId} {
+        allow get: if isVerified() && isValidId(orgId) && isValidId(reportId) && (isOrgMember(orgId) || isPlatformAdmin());
+        allow list: if isVerified() && isValidId(orgId) && (resource.data.authorId == request.auth.uid || isPlatformAdmin());
+        allow create: if isVerified() &&
+          isValidId(orgId) &&
+          isValidId(reportId) &&
+          isValidReport(incoming(), orgId) &&
+          incoming().authorId == request.auth.uid &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          exists(/databases/$(database)/documents/organizations/$(orgId)) &&
+          (isOrgAnalyst(orgId) || isPlatformAdmin());
+        allow update: if isVerified() &&
+          isValidId(orgId) &&
+          isValidId(reportId) &&
+          isValidReport(incoming(), orgId) &&
+          incoming().organizationId == existing().organizationId &&
+          incoming().authorId == existing().authorId &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          (
+            isPlatformAdmin() ||
+            (
+              (isOrgAdmin(orgId) || (isOrgAnalyst(orgId) && existing().authorId == request.auth.uid)) &&
+              incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'sqlQuery', 'chartType', 'updatedAt'])
+            )
+          );
+        allow delete: if isVerified() && isValidId(orgId) && isValidId(reportId) && (isOrgAdmin(orgId) || isPlatformAdmin());
+      }
+
+      // Sous-collection /organizations/{orgId}/conversations/{convId} (journal analytique immuable)
+      match /conversations/{convId} {
+        allow get: if isVerified() && isValidId(orgId) && isValidId(convId) && (isOrgMember(orgId) || isPlatformAdmin());
+        allow list: if isVerified() && isValidId(orgId) && (resource.data.authorId == request.auth.uid || isPlatformAdmin());
+        allow create: if isVerified() &&
+          isValidId(orgId) &&
+          isValidId(convId) &&
+          isValidConversation(incoming(), orgId) &&
+          incoming().createdAt == request.time &&
+          exists(/databases/$(database)/documents/organizations/$(orgId)) &&
+          (isOrgMember(orgId) || isPlatformAdmin());
+        allow update: if false;
+        allow delete: if isPlatformAdmin() && isValidId(orgId) && isValidId(convId);
+      }
+    }
+  }
+}
