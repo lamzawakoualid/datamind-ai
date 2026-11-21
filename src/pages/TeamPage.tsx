@@ -261,7 +261,7 @@ export function TeamPage({ user }: { user: AuthSessionUser }) {
             <Input
               id="inv-name"
               required
-              placeholder="Nicolas Lefèvre"
+              placeholder="Amine Mansouri"
               value={inviteForm.fullName}
               onChange={(e) => setInviteForm({ ...inviteForm, fullName: e.target.value })}
             />
@@ -274,7 +274,7 @@ export function TeamPage({ user }: { user: AuthSessionUser }) {
               id="inv-email"
               type="email"
               required
-              placeholder="nicolas.lefevre@atelier-nord.fr"
+              placeholder="amine.mansouri@atlas-industrie.ma"
               value={inviteForm.email}
               onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
             />

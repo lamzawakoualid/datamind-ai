@@ -130,6 +130,17 @@ async function startServer() {
   const app = express();
   app.use(express.json({ limit: '2mb' }));
 
+  // === Healthcheck (Docker / Cloud Run) ===
+  app.get('/api/health', (_req, res) => {
+    res.json({
+      status: 'ok',
+      service: 'DataMind AI',
+      currency: 'MAD',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+    });
+  });
+
   // === Auth routes ===
   app.post('/api/auth/login', (req, res) => {
     const { email, password } = req.body as { email?: string; password?: string };

@@ -4,6 +4,7 @@ import type { AuthSessionUser } from '../core/types.ts';
 import { apiRequest } from '../lib/api.ts';
 import { signInWithGooglePopup } from '../lib/firebase.ts';
 import { Button, Input } from '../components/ui/primitives.tsx';
+import { LegalModal, type LegalDocType } from '../components/LegalModal.tsx';
 
 export function AuthPages({
   onAuthenticated,
@@ -18,6 +19,7 @@ export function AuthPages({
   const [industry, setIndustry] = useState('Distribution industrielle');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [legalDoc, setLegalDoc] = useState<LegalDocType | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -207,7 +209,7 @@ export function AuthPages({
                     id="auth-fullname"
                     type="text"
                     required
-                    placeholder="Claire Moreau"
+                    placeholder="Nadia Benali"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                   />
@@ -221,7 +223,7 @@ export function AuthPages({
                       id="auth-org"
                       type="text"
                       required
-                      placeholder="Groupe Hexagone SAS"
+                      placeholder="Groupe Atlas SARL"
                       value={organizationName}
                       onChange={(e) => setOrganizationName(e.target.value)}
                     />
@@ -250,7 +252,7 @@ export function AuthPages({
                 id="auth-email"
                 type="email"
                 required
-                placeholder="camille.laurent@atelier-nord.fr"
+                placeholder="salma.benjelloun@atlas-industrie.ma"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -295,7 +297,7 @@ export function AuthPages({
               onClick={handleDemoLogin}
               disabled={loading}
             >
-              Ouvrir l’espace démo (Atelier Nord SAS)
+              Ouvrir l’espace démo (Atlas Industrie SARL)
             </Button>
 
             <Button
@@ -310,11 +312,35 @@ export function AuthPages({
           </div>
 
           <p className="mt-6 text-xs text-slate-500 text-center">
-            Compte démo : <span className="font-mono text-slate-700">camille.laurent@atelier-nord.fr</span> ·{' '}
+            Compte démo : <span className="font-mono text-slate-700">salma.benjelloun@atlas-industrie.ma</span> ·{' '}
             <span className="font-mono text-slate-700">DataMind2026!</span>
           </p>
+
+          <div className="mt-5 pt-4 border-t border-slate-200/80 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-slate-500">
+            <button
+              type="button"
+              onClick={() => setLegalDoc('privacy')}
+              className="hover:text-[#0F172A] underline-offset-2 hover:underline cursor-pointer"
+            >
+              Confidentialité & Loi 09-08 (CNDP)
+            </button>
+            <span aria-hidden="true">·</span>
+            <button
+              type="button"
+              onClick={() => setLegalDoc('terms')}
+              className="hover:text-[#0F172A] underline-offset-2 hover:underline cursor-pointer"
+            >
+              Conditions d’utilisation (CGU)
+            </button>
+          </div>
         </div>
       </div>
+
+      <LegalModal
+        open={legalDoc !== null}
+        docType={legalDoc || 'privacy'}
+        onClose={() => setLegalDoc(null)}
+      />
     </div>
   );
 }

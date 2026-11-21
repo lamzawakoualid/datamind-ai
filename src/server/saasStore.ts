@@ -188,18 +188,18 @@ function seedInitialData(db: Database.Database): void {
   if (existingOrg.cnt > 0) return;
 
   const now = new Date().toISOString();
-  const org1Id = 'org-atelier-nord';
-  const org2Id = 'org-maison-verneuil';
+  const org1Id = 'org-atlas-industrie';
+  const org2Id = 'org-maghreb-equipements';
 
   db.prepare(
     `INSERT INTO organizations (id, name, slug, industry, plan, queries_used, monthly_query_limit, ai_provider, ai_model, require_tls, enforce_allowlist, max_rows_per_query, query_timeout_ms, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1, 200, 5000, ?)`
-  ).run(org1Id, 'Atelier Nord SAS', 'atelier-nord', 'Distribution industrielle B2B', PlanTier.PRO, 318, 2500, AiProvider.GEMINI, 'gemini-4-hydrogen', now);
+  ).run(org1Id, 'Atlas Industrie SARL', 'atlas-industrie', 'Distribution industrielle B2B · Casablanca', PlanTier.PRO, 318, 2500, AiProvider.GEMINI, 'gemini-4-hydrogen', now);
 
   db.prepare(
     `INSERT INTO organizations (id, name, slug, industry, plan, queries_used, monthly_query_limit, ai_provider, ai_model, require_tls, enforce_allowlist, max_rows_per_query, query_timeout_ms, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1, 200, 5000, ?)`
-  ).run(org2Id, 'Maison Verneuil SA', 'maison-verneuil', 'Équipement & Mobilier Pro', PlanTier.STARTER, 142, 500, AiProvider.GEMINI, 'gemini-4-hydrogen', now);
+  ).run(org2Id, 'Maghreb Équipements SA', 'maghreb-equipements', 'Équipement & Mobilier Pro · Rabat', PlanTier.STARTER, 142, 500, AiProvider.GEMINI, 'gemini-4-hydrogen', now);
 
   const demoPasswordHash = bcrypt.hashSync('DataMind2026!', 10);
 
@@ -208,10 +208,10 @@ function seedInitialData(db: Database.Database): void {
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
   insertUser.run(
-    'usr-camille',
+    'usr-owner-demo',
     org1Id,
-    'Camille Laurent',
-    'camille.laurent@atelier-nord.fr',
+    'Salma Benjelloun',
+    'salma.benjelloun@atlas-industrie.ma',
     demoPasswordHash,
     UserRole.OWNER,
     'active',
@@ -220,13 +220,13 @@ function seedInitialData(db: Database.Database): void {
     now,
     now
   );
-  insertUser.run('usr-marc', org1Id, 'Marc Delacroix', 'marc.delacroix@atelier-nord.fr', demoPasswordHash, UserRole.ADMIN, 'active', 0, null, now, now);
-  insertUser.run('usr-sofia', org1Id, 'Sofia Benali', 'sofia.benali@atelier-nord.fr', demoPasswordHash, UserRole.ANALYST, 'active', 0, null, now, now);
-  insertUser.run('usr-thomas', org1Id, 'Thomas Girard', 'thomas.girard@atelier-nord.fr', demoPasswordHash, UserRole.VIEWER, 'active', 0, null, now, now);
-  insertUser.run('usr-julie', org2Id, 'Julie Mercier', 'julie.mercier@maison-verneuil.fr', demoPasswordHash, UserRole.OWNER, 'active', 0, null, now, now);
+  insertUser.run('usr-youssef', org1Id, 'Youssef El Amrani', 'youssef.elamrani@atlas-industrie.ma', demoPasswordHash, UserRole.ADMIN, 'active', 0, null, now, now);
+  insertUser.run('usr-kenza', org1Id, 'Kenza Berrada', 'kenza.berrada@atlas-industrie.ma', demoPasswordHash, UserRole.ANALYST, 'active', 0, null, now, now);
+  insertUser.run('usr-karim', org1Id, 'Karim Tazi', 'karim.tazi@atlas-industrie.ma', demoPasswordHash, UserRole.VIEWER, 'active', 0, null, now, now);
+  insertUser.run('usr-nadia', org2Id, 'Nadia Chraïbi', 'nadia.chraibi@maghreb-equipements.ma', demoPasswordHash, UserRole.OWNER, 'active', 0, null, now, now);
 
   const demoAllowlist = getDefaultDemoAllowlist();
-  const ds1Id = 'ds-atelier-demo';
+  const ds1Id = 'ds-atlas-demo';
   db.prepare(
     `INSERT INTO data_sources (id, organization_id, name, engine, host, port, database_name, username, encrypted_password, tls_mode, read_only_enforced, max_rows, timeout_ms, status, last_tested_at, tables_json)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 200, 5000, ?, ?, ?)`
@@ -235,9 +235,9 @@ function seedInitialData(db: Database.Database): void {
     org1Id,
     'Entrepôt Commercial & Stocks (Démo SQL)',
     DbEngine.DEMO_WAREHOUSE,
-    'interne-lecture-seule.datamind.local',
+    'interne-lecture-seule.datamind.ma',
     5432,
-    'atelier_nord_erp',
+    'atlas_industrie_erp',
     'ro_datamind_analyst',
     encryptSecret('ro_demo_credential_protected'),
     'verify-full',
@@ -250,15 +250,15 @@ function seedInitialData(db: Database.Database): void {
     `INSERT INTO data_sources (id, organization_id, name, engine, host, port, database_name, username, encrypted_password, tls_mode, read_only_enforced, max_rows, timeout_ms, status, last_tested_at, tables_json)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 200, 5000, ?, ?, ?)`
   ).run(
-    'ds-verneuil-demo',
+    'ds-maghreb-demo',
     org2Id,
-    'Base Comptable Verneuil (Démo SQL)',
+    'Base Comptable Maghreb (Démo SQL)',
     DbEngine.DEMO_WAREHOUSE,
-    'interne-lecture-seule.datamind.local',
+    'interne-lecture-seule.datamind.ma',
     5432,
-    'verneuil_finance',
-    'ro_verneuil_reader',
-    encryptSecret('ro_verneuil_credential_protected'),
+    'maghreb_finance',
+    'ro_maghreb_reader',
+    encryptSecret('ro_maghreb_credential_protected'),
     'require',
     'connected',
     now,
@@ -290,7 +290,7 @@ function seedInitialData(db: Database.Database): void {
     "SELECT substr(issued_at, 1, 7) AS mois, ROUND(SUM(CASE WHEN status != 'cancelled' THEN amount_ht ELSE 0 END), 2) AS chiffre_affaires_ht, ROUND(SUM(CASE WHEN status = 'paid' THEN amount_ttc ELSE 0 END), 2) AS ventes_encaissees_ttc FROM invoices GROUP BY mois ORDER BY mois ASC LIMIT 24",
     'area',
     'weekly',
-    'Camille Laurent',
+    'Salma Benjelloun',
     now,
     11
   );
@@ -304,7 +304,7 @@ function seedInitialData(db: Database.Database): void {
     'SELECT p.category AS categorie, ROUND(SUM(oi.unit_price * oi.quantity), 2) AS chiffre_affaires_ht, ROUND(SUM((oi.unit_price - p.unit_cost) * oi.quantity), 2) AS marge_brute, ROUND(100.0 * SUM((oi.unit_price - p.unit_cost) * oi.quantity) / NULLIF(SUM(oi.unit_price * oi.quantity), 0), 1) AS taux_marge_pct FROM order_items oi JOIN products p ON p.id = oi.product_id GROUP BY p.category ORDER BY marge_brute DESC LIMIT 20',
     'bar',
     'monthly',
-    'Sofia Benali',
+    'Kenza Berrada',
     now,
     4
   );
@@ -318,21 +318,21 @@ function seedInitialData(db: Database.Database): void {
     "SELECT c.company_name AS client, c.region AS region, COUNT(i.id) AS nb_factures, ROUND(SUM(i.amount_ttc), 2) AS montant_impaye_ttc FROM invoices i JOIN customers c ON c.id = i.customer_id WHERE i.status IN ('overdue', 'pending') GROUP BY c.company_name, c.region ORDER BY montant_impaye_ttc DESC LIMIT 50",
     'bar',
     'daily',
-    'Marc Delacroix',
+    'Youssef El Amrani',
     now,
     8
   );
   insertReport.run(
     'rep-top-regions',
     org1Id,
-    'Performance commerciale par région française',
+    'Performance commerciale par région du Maroc',
     'Répartition du chiffre d’affaires HT facturé et du volume de commandes par région.',
     'Commercial',
     ds1Id,
     "SELECT c.region AS region, COUNT(DISTINCT i.order_id) AS commandes, ROUND(SUM(CASE WHEN i.status != 'cancelled' THEN i.amount_ht ELSE 0 END), 2) AS chiffre_affaires_ht FROM invoices i JOIN customers c ON c.id = i.customer_id GROUP BY c.region ORDER BY chiffre_affaires_ht DESC LIMIT 20",
     'bar',
     'weekly',
-    'Camille Laurent',
+    'Salma Benjelloun',
     now,
     7
   );
@@ -340,7 +340,7 @@ function seedInitialData(db: Database.Database): void {
   // Sync initial stock alerts directly from demo warehouse SQL
   syncStockAlertsForOrg(db, org1Id);
 
-  // Seed 2 initial real conversation history records
+  // Seed initial real conversation history record
   const sample1 = executeDemoReadOnlyQuery(
     'SELECT p.category AS categorie, ROUND(SUM((oi.unit_price - p.unit_cost) * oi.quantity), 2) AS marge_brute, ROUND(SUM(oi.unit_price * oi.quantity), 2) AS chiffre_affaires_ht FROM order_items oi JOIN products p ON p.id = oi.product_id GROUP BY p.category ORDER BY marge_brute DESC LIMIT 20'
   );
@@ -350,15 +350,15 @@ function seedInitialData(db: Database.Database): void {
   ).run(
     'conv-seed-1',
     org1Id,
-    'usr-camille',
-    'camille.laurent@atelier-nord.fr',
+    'usr-owner-demo',
+    'salma.benjelloun@atlas-industrie.ma',
     ds1Id,
     'Entrepôt Commercial & Stocks (Démo SQL)',
     'Quelle est la marge brute commerciale par catégorie de produits cette année ?',
     'SELECT p.category AS categorie, ROUND(SUM((oi.unit_price - p.unit_cost) * oi.quantity), 2) AS marge_brute, ROUND(SUM(oi.unit_price * oi.quantity), 2) AS chiffre_affaires_ht FROM order_items oi JOIN products p ON p.id = oi.product_id GROUP BY p.category ORDER BY marge_brute DESC LIMIT 20',
     'executed',
     null,
-    'Les équipements industriels et les composants réseau génèrent la plus forte contribution en marge brute cumulée sur l’exercice 2026.',
+    'Les équipements industriels et les composants réseau génèrent la plus forte contribution en marge brute cumulée sur l’exercice 2026 (montants en MAD).',
     JSON.stringify(sample1.columns),
     JSON.stringify(sample1.rows),
     sample1.rows.length,
@@ -366,7 +366,7 @@ function seedInitialData(db: Database.Database): void {
       type: 'bar',
       xKey: 'categorie',
       yKeys: ['marge_brute', 'chiffre_affaires_ht'],
-      title: 'Marge brute et chiffre d’affaires HT par catégorie',
+      title: 'Marge brute et chiffre d’affaires HT par catégorie (MAD)',
       valueFormat: 'currency',
     }),
     sample1.executionMs,
@@ -382,8 +382,8 @@ function seedInitialData(db: Database.Database): void {
   insertAudit.run(
     'aud-1',
     org1Id,
-    'Atelier Nord SAS',
-    'camille.laurent@atelier-nord.fr',
+    'Atlas Industrie SARL',
+    'salma.benjelloun@atlas-industrie.ma',
     UserRole.OWNER,
     'Requête analytique exécutée',
     'query',
@@ -395,8 +395,8 @@ function seedInitialData(db: Database.Database): void {
   insertAudit.run(
     'aud-2',
     org1Id,
-    'Atelier Nord SAS',
-    'sofia.benali@atelier-nord.fr',
+    'Atlas Industrie SARL',
+    'kenza.berrada@atlas-industrie.ma',
     UserRole.ANALYST,
     'Tentative d’accès colonne masquée bloquée',
     'query',
@@ -408,8 +408,8 @@ function seedInitialData(db: Database.Database): void {
   insertAudit.run(
     'aud-3',
     org1Id,
-    'Atelier Nord SAS',
-    'marc.delacroix@atelier-nord.fr',
+    'Atlas Industrie SARL',
+    'youssef.elamrani@atlas-industrie.ma',
     UserRole.ADMIN,
     'Vérification TLS & chiffrement AES-256-GCM',
     'datasource',
@@ -421,8 +421,8 @@ function seedInitialData(db: Database.Database): void {
   insertAudit.run(
     'aud-4',
     org2Id,
-    'Maison Verneuil SA',
-    'julie.mercier@maison-verneuil.fr',
+    'Maghreb Équipements SA',
+    'nadia.chraibi@maghreb-equipements.ma',
     UserRole.OWNER,
     'Mise à jour de la couche sémantique',
     'semantic',
@@ -674,7 +674,7 @@ export function loginDemoAccount(): { token: string; user: AuthSessionUser } {
       `SELECT u.*, o.name AS org_name
        FROM users u
        JOIN organizations o ON o.id = u.organization_id
-       WHERE u.id = 'usr-camille'`
+       WHERE u.id = 'usr-owner-demo'`
     )
     .get() as {
     id: string;

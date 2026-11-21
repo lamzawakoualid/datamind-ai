@@ -59,6 +59,9 @@ export function DataChart({
   const axisTickStyle = { fontSize: 12, fill: '#64748B' };
   const formatYAxis = (v: number) => {
     if (config.valueFormat === 'currency') {
+      if (Math.abs(v) >= 1_000_000) {
+        return `${(v / 1_000_000).toFixed(1).replace('.', ',')}M MAD`;
+      }
       return Math.abs(v) >= 1000 ? `${Math.round(v / 1000)}k MAD` : `${v} MAD`;
     }
     if (config.valueFormat === 'percent') return `${v} %`;

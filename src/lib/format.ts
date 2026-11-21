@@ -1,22 +1,32 @@
+function normalizeFrSpaces(formatted: string): string {
+  return formatted.replace(/\u202F/g, '\u00A0');
+}
+
 export function formatMad(value: number): string {
   const safe = Number.isFinite(value) ? value : 0;
-  return `${new Intl.NumberFormat('fr-FR', {
-    maximumFractionDigits: 0,
-  }).format(safe)} MAD`;
+  return `${normalizeFrSpaces(
+    new Intl.NumberFormat('fr-FR', {
+      maximumFractionDigits: 0,
+    }).format(safe)
+  )} MAD`;
 }
 
 export function formatMadPrecise(value: number): string {
   const safe = Number.isFinite(value) ? value : 0;
-  return `${new Intl.NumberFormat('fr-FR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(safe)} MAD`;
+  return `${normalizeFrSpaces(
+    new Intl.NumberFormat('fr-FR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(safe)
+  )} MAD`;
 }
 
 export function formatNumberFr(value: number): string {
-  return new Intl.NumberFormat('fr-FR', {
-    maximumFractionDigits: 2,
-  }).format(Number.isFinite(value) ? value : 0);
+  return normalizeFrSpaces(
+    new Intl.NumberFormat('fr-FR', {
+      maximumFractionDigits: 2,
+    }).format(Number.isFinite(value) ? value : 0)
+  );
 }
 
 export function formatDateFr(iso: string): string {

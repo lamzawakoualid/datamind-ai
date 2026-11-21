@@ -4,6 +4,7 @@ import { AiProvider, type AuthSessionUser, type OrganizationRecord } from '../co
 import { hasPermission } from '../core/rbac.ts';
 import { apiRequest } from '../lib/api.ts';
 import { Button, Input, Select, Surface } from '../components/ui/primitives.tsx';
+import { LegalModal, type LegalDocType } from '../components/LegalModal.tsx';
 
 interface ProviderStatus {
   provider: AiProvider;
@@ -18,6 +19,7 @@ export function SettingsPage({ user }: { user: AuthSessionUser }) {
   const [providers, setProviders] = useState<ProviderStatus[]>([]);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+  const [legalDoc, setLegalDoc] = useState<LegalDocType | null>(null);
 
   const canManage = hasPermission(user.role, 'settings:manage', user.isPlatformAdmin);
 
@@ -281,6 +283,26 @@ export function SettingsPage({ user }: { user: AuthSessionUser }) {
         </div>
       </Surface>
 
+      {/* CNDP & Moroccan Governance Documentation */}
+      <Surface className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-base font-semibold text-[#0F172A]">
+            Conformité réglementaire Maroc (Loi 09-08 · CNDP)
+          </h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Devise analytique : Dirham marocain (MAD) · Chiffrement AES-256-GCM · Lecture seule stricte.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <Button variant="outline" size="sm" onClick={() => setLegalDoc('privacy')}>
+            Notice CNDP (Loi 09-08)
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setLegalDoc('terms')}>
+            Conditions (CGU)
+          </Button>
+        </div>
+      </Surface>
+
       {canManage && (
         <div className="flex justify-end">
           <Button type="submit" disabled={saving}>
@@ -289,6 +311,12 @@ export function SettingsPage({ user }: { user: AuthSessionUser }) {
           </Button>
         </div>
       )}
+
+      <LegalModal
+        open={legalDoc !== null}
+        docType={legalDoc || 'privacy'}
+        onClose={() => setLegalDoc(null)}
+      />
     </form>
   );
 }

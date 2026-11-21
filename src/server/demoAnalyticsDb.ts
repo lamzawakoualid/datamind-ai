@@ -95,16 +95,16 @@ export function ensureDemoWarehouse(): string {
     'INSERT INTO customers (id, company_name, segment, region, city, account_manager, created_at, iban) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
   );
   const customers = [
-    [1, 'Énergie Rhône Industrie', 'Grand Compte', 'Auvergne-Rhône-Alpes', 'Lyon', 'Camille Laurent', '2024-03-14', 'FR7630006000011234567890189'],
-    [2, 'AéroTech Toulouse SAS', 'Grand Compte', 'Occitanie', 'Toulouse', 'Marc Delacroix', '2024-05-02', 'FR7630004000019876543210112'],
-    [3, 'NordLogistique Services', 'ETI', 'Hauts-de-France', 'Lille', 'Camille Laurent', '2024-07-19', 'FR7610278060010002019482155'],
-    [4, 'Seine Distribution Pro', 'Grand Compte', 'Île-de-France', 'Nanterre', 'Sofia Benali', '2024-09-10', 'FR7630003011000005012345611'],
-    [5, 'Aquitaine Mécanique', 'ETI', 'Nouvelle-Aquitaine', 'Bordeaux', 'Marc Delacroix', '2024-11-28', 'FR7617515006000800192837461'],
-    [6, 'Alsace Automatisme', 'PME', 'Grand Est', 'Strasbourg', 'Sofia Benali', '2025-01-12', 'FR7614707000103192837465190'],
-    [7, 'Bretagne Capteurs & Systèmes', 'PME', 'Bretagne', 'Rennes', 'Camille Laurent', '2025-02-24', 'FR7615589291000001928374612'],
-    [8, 'Provence Équipements', 'ETI', 'Provence-Alpes-Côte d’Azur', 'Marseille', 'Marc Delacroix', '2025-04-06', 'FR7611315000010800918273645'],
-    [9, 'Val-de-Loire Process', 'PME', 'Centre-Val de Loire', 'Tours', 'Sofia Benali', '2025-06-18', 'FR7614505000010800123987451'],
-    [10, 'Paris Infra Réseaux', 'Grand Compte', 'Île-de-France', 'Paris', 'Camille Laurent', '2025-08-04', 'FR7630002005500000157845Z02'],
+    [1, 'Atlas Énergie Industrie', 'Grand Compte', 'Casablanca-Settat', 'Casablanca', 'Salma Benjelloun', '2024-03-14', 'MA64011780000012210001234567'],
+    [2, 'AéroMed Tanger SARL', 'Grand Compte', 'Tanger-Tétouan-Al Hoceïma', 'Tanger', 'Youssef El Amrani', '2024-05-02', 'MA64007640000098765432101122'],
+    [3, 'Rabat Logistique Services', 'ETI', 'Rabat-Salé-Kénitra', 'Rabat', 'Salma Benjelloun', '2024-07-19', 'MA64022810000002019482155091'],
+    [4, 'Anfa Distribution Pro', 'Grand Compte', 'Casablanca-Settat', 'Mohammédia', 'Kenza Berrada', '2024-09-10', 'MA64011780000005012345611442'],
+    [5, 'Souss Mécanique Industrielle', 'ETI', 'Souss-Massa', 'Agadir', 'Youssef El Amrani', '2024-11-28', 'MA64007010000008001928374619'],
+    [6, 'Fès Automatisme & Contrôle', 'PME', 'Fès-Meknès', 'Fès', 'Kenza Berrada', '2025-01-12', 'MA64021270000031928374651908'],
+    [7, 'Marrakech Capteurs & Systèmes', 'PME', 'Marrakech-Safi', 'Marrakech', 'Salma Benjelloun', '2025-02-24', 'MA64007450000001928374612334'],
+    [8, 'Oriental Équipements Pro', 'ETI', 'Oriental', 'Oujda', 'Youssef El Amrani', '2025-04-06', 'MA64011570000008009182736451'],
+    [9, 'Kénitra Process Industriel', 'PME', 'Rabat-Salé-Kénitra', 'Kénitra', 'Kenza Berrada', '2025-06-18', 'MA64022330000008001239874510'],
+    [10, 'Casablanca Infra Réseaux', 'Grand Compte', 'Casablanca-Settat', 'Casablanca', 'Salma Benjelloun', '2025-08-04', 'MA64011780000000157845990218'],
   ];
   for (const c of customers) insertCustomer.run(...c);
 
@@ -112,25 +112,25 @@ export function ensureDemoWarehouse(): string {
     'INSERT INTO products (id, sku, name, category, unit_price, unit_cost, supplier) VALUES (?, ?, ?, ?, ?, ?, ?)'
   );
   const products = [
-    [1, 'CAP-TH400', 'Capteur thermique industriel TH-400', 'Capteurs IoT', 420, 215, 'SensoTech Europe'],
-    [2, 'CAP-PR210', 'Sonde de pression différentielle PR-210', 'Capteurs IoT', 580, 310, 'SensoTech Europe'],
-    [3, 'CAP-VB90', 'Accéléromètre vibration prédictive VB-90', 'Capteurs IoT', 690, 360, 'Alps Micro'],
-    [4, 'EQP-PLC8', 'Automate programmable modulaire PLC-8', 'Équipements industriels', 1850, 1080, 'Helvetia Controls'],
-    [5, 'EQP-VAR32', 'Variateur de fréquence triphasé 32A', 'Équipements industriels', 1420, 840, 'Helvetia Controls'],
-    [6, 'EQP-ALIM24', 'Alimentation redondante rail DIN 24V', 'Équipements industriels', 340, 175, 'VoltPro Lyon'],
-    [7, 'RES-SW16', 'Switch Ethernet industriel 16 ports PoE', 'Composants réseau', 960, 520, 'NetCore France'],
-    [8, 'RES-GW5G', 'Passerelle Edge 5G chiffrée TLS', 'Composants réseau', 1290, 690, 'NetCore France'],
-    [9, 'RES-FIB10', 'Module optique SFP+ 10Gb durci', 'Composants réseau', 240, 110, 'OptiLink SAS'],
-    [10, 'MNT-KIT01', 'Kit maintenance préventive joints & filtres', 'Maintenance & Pièces', 195, 78, 'Atelier Pièces Nord'],
-    [11, 'MNT-BAT48', 'Pack batterie secours LiFePO4 48V', 'Maintenance & Pièces', 510, 295, 'VoltPro Lyon'],
-    [12, 'MNT-CAB20', 'Câble blindé haute température 20m', 'Maintenance & Pièces', 145, 62, 'Atelier Pièces Nord'],
+    [1, 'CAP-TH400', 'Capteur thermique industriel TH-400', 'Capteurs IoT', 4200, 2150, 'SensoTech Maghreb'],
+    [2, 'CAP-PR210', 'Sonde de pression différentielle PR-210', 'Capteurs IoT', 5800, 3100, 'SensoTech Maghreb'],
+    [3, 'CAP-VB90', 'Accéléromètre vibration prédictive VB-90', 'Capteurs IoT', 6900, 3600, 'Atlas Micro'],
+    [4, 'EQP-PLC8', 'Automate programmable modulaire PLC-8', 'Équipements industriels', 18500, 10800, 'Atlas Controls'],
+    [5, 'EQP-VAR32', 'Variateur de fréquence triphasé 32A', 'Équipements industriels', 14200, 8400, 'Atlas Controls'],
+    [6, 'EQP-ALIM24', 'Alimentation redondante rail DIN 24V', 'Équipements industriels', 3400, 1750, 'VoltPro Casablanca'],
+    [7, 'RES-SW16', 'Switch Ethernet industriel 16 ports PoE', 'Composants réseau', 9600, 5200, 'NetCore Maroc'],
+    [8, 'RES-GW5G', 'Passerelle Edge 5G chiffrée TLS', 'Composants réseau', 12900, 6900, 'NetCore Maroc'],
+    [9, 'RES-FIB10', 'Module optique SFP+ 10Gb durci', 'Composants réseau', 2400, 1100, 'OptiLink Tanger'],
+    [10, 'MNT-KIT01', 'Kit maintenance préventive joints & filtres', 'Maintenance & Pièces', 1950, 780, 'Atelier Pièces Casa'],
+    [11, 'MNT-BAT48', 'Pack batterie secours LiFePO4 48V', 'Maintenance & Pièces', 5100, 2950, 'VoltPro Casablanca'],
+    [12, 'MNT-CAB20', 'Câble blindé haute température 20m', 'Maintenance & Pièces', 1450, 620, 'Atelier Pièces Casa'],
   ];
   for (const p of products) insertProduct.run(...p);
 
   const insertWarehouse = db.prepare('INSERT INTO warehouses (id, code, name, city) VALUES (?, ?, ?, ?)');
-  insertWarehouse.run(1, 'WH-LYO', 'Entrepôt Lyon-Est', 'Lyon');
-  insertWarehouse.run(2, 'WH-LIL', 'Entrepôt Lille-Nord', 'Lille');
-  insertWarehouse.run(3, 'WH-BDX', 'Entrepôt Bordeaux-Ouest', 'Bordeaux');
+  insertWarehouse.run(1, 'WH-CAS', 'Entrepôt Casablanca-Aïn Sebaâ', 'Casablanca');
+  insertWarehouse.run(2, 'WH-TNG', 'Entrepôt Tanger-Med', 'Tanger');
+  insertWarehouse.run(3, 'WH-MAR', 'Entrepôt Marrakech-Sidi Ghanem', 'Marrakech');
 
   const insertStock = db.prepare(
     'INSERT INTO stock_levels (id, product_id, warehouse_id, quantity_on_hand, min_threshold, daily_run_rate, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
@@ -255,11 +255,11 @@ export function getDefaultDemoAllowlist(): TableAllowlistItem[] {
         { name: 'id', type: 'INTEGER', allowed: true },
         { name: 'company_name', type: 'TEXT', allowed: true, description: 'Raison sociale' },
         { name: 'segment', type: 'TEXT', allowed: true, description: 'Grand Compte, ETI, PME' },
-        { name: 'region', type: 'TEXT', allowed: true, description: 'Région française' },
+        { name: 'region', type: 'TEXT', allowed: true, description: 'Région marocaine' },
         { name: 'city', type: 'TEXT', allowed: true },
         { name: 'account_manager', type: 'TEXT', allowed: true },
         { name: 'created_at', type: 'TEXT', allowed: true },
-        { name: 'iban', type: 'TEXT', allowed: false, sensitive: true, description: 'Coordonnée bancaire masquée' },
+        { name: 'iban', type: 'TEXT', allowed: false, sensitive: true, description: 'Coordonnée bancaire (RIB/IBAN) masquée' },
       ],
     },
     {
